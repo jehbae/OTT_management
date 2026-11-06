@@ -1,87 +1,162 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OTT 실시간 인증 포털</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실시간 OTT 인증번호 센터</title>
+    <!-- Tailwind CSS (디자인 프레임워크) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS SDK v2 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
+    </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen p-4 flex flex-col items-center">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
 
-  <div class="max-w-md w-full mt-6">
-    <header class="text-center mb-8">
-      <h1 class="text-2xl font-bold text-red-500">🎬 OTT 파티 실시간 인증 센터</h1>
-      <p class="text-sm text-gray-400 mt-2">인증 요청 후 아래에서 즉시 번호를 확인하세요.</p>
+    <!-- Header -->
+    <header class="text-center mb-10 max-w-xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-semibold mb-4 border border-emerald-500/20">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            24시간 백그라운드 실시간 감지 중
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-2">
+            🎬 OTT 인증번호 파싱 센터
+        </h1>
+        <p class="text-slate-400 text-sm sm:text-base">
+            수신된 메일의 인증번호가 자동으로 최신화됩니다. 카드를 클릭하면 번호가 복사됩니다.
+        </p>
     </header>
 
-    <!-- 4개 OTT 카드가 표시되는 영역 -->
-    <div id="ott-list" class="space-y-4">
-      <!-- 동적 로딩 중... -->
+    <!-- Grid Container -->
+    <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-6xl">
+
+        <!-- 1. Disney+ Card -->
+        <div onclick="copyToClipboard('disney')" class="group relative bg-slate-900 border border-slate-800 hover:border-blue-500/50 rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10 cursor-pointer">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-bold px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20">DISNEY+</span>
+                <span id="disney-time" class="text-[11px] text-slate-500">대기 중...</span>
+            </div>
+            <div class="text-slate-400 text-xs font-medium mb-1">최신 인증번호</div>
+            <div id="disney-code" class="text-3xl font-black text-white group-hover:text-blue-400 transition-colors tracking-wider">
+                -
+            </div>
+        </div>
+
+        <!-- 2. Netflix Card -->
+        <div onclick="copyToClipboard('netflix')" class="group relative bg-slate-900 border border-slate-800 hover:border-red-500/50 rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-red-500/10 cursor-pointer">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-bold px-2.5 py-1 rounded-md bg-red-500/10 text-red-500 border border-red-500/20">NETFLIX</span>
+                <span id="netflix-time" class="text-[11px] text-slate-500">대기 중...</span>
+            </div>
+            <div class="text-slate-400 text-xs font-medium mb-1">최신 인증번호 / 상태</div>
+            <div id="netflix-code" class="text-3xl font-black text-white group-hover:text-red-400 transition-colors tracking-wider">
+                -
+            </div>
+        </div>
+
+        <!-- 3. TVING Card -->
+        <div onclick="copyToClipboard('tving')" class="group relative bg-slate-900 border border-slate-800 hover:border-rose-500/50 rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose-500/10 cursor-pointer">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-bold px-2.5 py-1 rounded-md bg-rose-500/10 text-rose-400 border border-rose-500/20">TVING</span>
+                <span id="tving-time" class="text-[11px] text-slate-500">대기 중...</span>
+            </div>
+            <div class="text-slate-400 text-xs font-medium mb-1">최신 인증번호</div>
+            <div id="tving-code" class="text-3xl font-black text-white group-hover:text-rose-400 transition-colors tracking-wider">
+                -
+            </div>
+        </div>
+
+        <!-- 4. Coupang Play Card -->
+        <div onclick="copyToClipboard('coupang')" class="group relative bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-500/10 cursor-pointer">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-bold px-2.5 py-1 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">COUPANG</span>
+                <span id="coupang-time" class="text-[11px] text-slate-500">대기 중...</span>
+            </div>
+            <div class="text-slate-400 text-xs font-medium mb-1">최신 인증번호</div>
+            <div id="coupang-code" class="text-3xl font-black text-white group-hover:text-cyan-400 transition-colors tracking-wider">
+                -
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-6 bg-emerald-500 text-slate-950 px-4 py-2 rounded-lg font-semibold text-sm opacity-0 transition-opacity duration-300 pointer-events-none shadow-lg">
+        인증번호가 클립보드에 복사되었습니다!
     </div>
-  </div>
 
-  <script>
-    const SUPABASE_URL = "https://otsdobyklhmcgcgdwqmb.supabase.co/rest/v1/";
-    const SUPABASE_KEY = "sb_publishable_yr6NDyOY4-m5AkF-6HqxSA_uMzvf2E7";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <!-- Script Area -->
+    <script>
+        // Supabase 설정
+        const SUPABASE_URL = "https://otsdobyklhmcgcgdwqmb.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_yr6NDyOY4-m5AkF-6HqxSA_uMzvf2E7";
 
-    const ottInfo = {
-      netflix: { name: '넷플릭스', color: 'border-red-600', bg: 'bg-red-950/30' },
-      disney: { name: '디즈니 플러스', color: 'border-blue-500', bg: 'bg-blue-950/30' },
-      tving: { name: '티빙', color: 'border-red-400', bg: 'bg-red-900/20' },
-      coupang: { name: '쿠팡플레이', color: 'border-sky-400', bg: 'bg-sky-950/30' }
-    };
+        // SDK 클라이언트 생성 (변수명 중복 방지)
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function loadData() {
-      const { data, error } = await supabase.from('ott_codes').select('*');
-      if (data) render(data);
-    }
+        // Supabase DB 실시간 조회 함수
+        async function fetchOttCodes() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('ott_codes')
+                    .select('*');
 
-    function render(items) {
-      const container = document.getElementById('ott-list');
-      container.innerHTML = '';
+                if (error) {
+                    console.error("Supabase 조회 에러:", error);
+                    return;
+                }
 
-      items.forEach(item => {
-        const info = ottInfo[item.id] || { name: item.ott_name, color: 'border-gray-600', bg: 'bg-gray-800' };
-        const timeAgo = item.updated_at ? new Date(item.updated_at).toLocaleTimeString() : '';
+                if (data) {
+                    data.forEach(item => {
+                        const codeElement = document.getElementById(`${item.id}-code`);
+                        const timeElement = document.getElementById(`${item.id}-time`);
 
-        const card = document.createElement('div');
-        card.className = `border-l-4 ${info.color} ${info.bg} p-5 rounded-r-xl bg-gray-800/80 shadow-lg`;
-        
-        card.innerHTML = `
-          <div class="flex justify-between items-center mb-2">
-            <span class="font-bold text-lg">${info.name}</span>
-            <span class="text-xs text-gray-400">${timeAgo}</span>
-          </div>
-          <div class="flex items-center justify-between mt-3 bg-gray-900/80 p-3 rounded-lg">
-            <span class="text-2xl font-mono tracking-widest text-yellow-400 font-extrabold">${item.code}</span>
-            ${item.code !== '대기 중' ? `
-              <button onclick="copyToClipboard('${item.code}')" class="bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded text-xs">
-                복사
-              </button>
-            ` : ''}
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
+                        if (codeElement) {
+                            codeElement.innerText = item.code || '-';
+                        }
 
-    function copyToClipboard(text) {
-      navigator.clipboard.writeText(text);
-      alert('인증 코드가 복사되었습니다: ' + text);
-    }
+                        if (timeElement && item.updated_at) {
+                            const date = new Date(item.updated_at);
+                            const hours = String(date.getHours()).padStart(2, '0');
+                            const minutes = String(date.getMinutes()).padStart(2, '0');
+                            const seconds = String(date.getSeconds()).padStart(2, '0');
+                            timeElement.innerText = `${hours}:${minutes}:${seconds}`;
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error("네트워크 오류:", err);
+            }
+        }
 
-    // 1. 초기 데이터 로드
-    loadData();
+        // 클립보드 복사 함수
+        function copyToClipboard(id) {
+            const codeText = document.getElementById(`${id}-code`).innerText;
+            if (codeText && codeText !== '-' && !codeText.includes('완료')) {
+                navigator.clipboard.writeText(codeText).then(() => {
+                    showToast();
+                });
+            }
+        }
 
-    // 2. Supabase Realtime 구독 (페이지 새로고침 없이 메일 수신 시 바로 데이터 반영)
-    supabase
-      .channel('schema-db-changes')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'ott_codes' }, payload => {
-        loadData();
-      })
-      .subscribe();
-  </script>
+        // 토스트 알림 표시
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 2000);
+        }
+
+        // 최초 로드 실행
+        fetchOttCodes();
+
+        // 3초마다 자동 데이터 갱신 (Polling)
+        setInterval(fetchOttCodes, 3000);
+    </script>
 </body>
 </html>
