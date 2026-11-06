@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTT 실시간 인증 포털</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-4 flex flex-col items-center">
+
+  <div class="max-w-md w-full mt-6">
+    <header class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-red-500">🎬 OTT 파티 실시간 인증 센터</h1>
+      <p class="text-sm text-gray-400 mt-2">인증 요청 후 아래에서 즉시 번호를 확인하세요.</p>
+    </header>
+
+    <!-- 4개 OTT 카드가 표시되는 영역 -->
+    <div id="ott-list" class="space-y-4">
+      <!-- 동적 로딩 중... -->
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT.supabase.co";
+    const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY";
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const ottInfo = {
+      netflix: { name: '넷플릭스', color: 'border-red-600', bg: 'bg-red-950/30' },
+      disney: { name: '디즈니 플러스', color: 'border-blue-500', bg: 'bg-blue-950/30' },
+      tving: { name: '티빙', color: 'border-red-400', bg: 'bg-red-900/20' },
+      coupang: { name: '쿠팡플레이', color: 'border-sky-400', bg: 'bg-sky-950/30' }
+    };
+
+    async function loadData() {
+      const { data, error } = await supabase.from('ott_codes').select('*');
+      if (data) render(data);
+    }
+
+    function render(items) {
+      const container = document.getElementById('ott-list');
+      container.innerHTML = '';
+
+      items.forEach(item => {
+        const info = ottInfo[item.id] || { name: item.ott_name, color: 'border-gray-600', bg: 'bg-gray-800' };
+        const timeAgo = item.updated_at ? new Date(item.updated_at).toLocaleTimeString() : '';
+
+        const card = document.createElement('div');
+        card.className = `border-l-4 ${info.color} ${info.bg} p-5 rounded-r-xl bg-gray-800/80 shadow-lg`;
+        
+        card.innerHTML = `
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-bold text-lg">${info.name}</span>
+            <span class="text-xs text-gray-400">${timeAgo}</span>
+          </div>
+          <div class="flex items-center justify-between mt-3 bg-gray-900/80 p-3 rounded-lg">
+            <span class="text-2xl font-mono tracking-widest text-yellow-400 font-extrabold">${item.code}</span>
+            ${item.code !== '대기 중' ? `
+              <button onclick="copyToClipboard('${item.code}')" class="bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded text-xs">
+                복사
+              </button>
+            ` : ''}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text);
+      alert('인증 코드가 복사되었습니다: ' + text);
+    }
+
+    // 1. 초기 데이터 로드
+    loadData();
+
+    // 2. Supabase Realtime 구독 (페이지 새로고침 없이 메일 수신 시 바로 데이터 반영)
+    supabase
+      .channel('schema-db-changes')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'ott_codes' }, payload => {
+        loadData();
+      })
+      .subscribe();
+  </script>
+</body>
+</html>
